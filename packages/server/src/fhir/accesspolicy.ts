@@ -12,6 +12,15 @@ import {
 import { Repository, getSystemRepo } from './repo';
 import { applySmartScopes } from './smart';
 
+// getAuthStateForRequest
+//  - getAuthStateForAccessToken
+//  - getAuthStateForBasicAuth
+// getRepoForAuthState
+
+// getRepoForRequest
+
+// Combine RepositoryContext and AuthState?
+
 /**
  * Creates a repository object for the user login object.
  * Individual instances of the Repository class manage access rights to resources.
@@ -77,7 +86,7 @@ export async function getAccessPolicyForLogin(
   // Apply project admin access policies
   // This includes ensuring no admin rights for non-admins
   // and restricted access for admins
-  accessPolicy = applyProjectAdminAccessPolicy(project, login, membership, accessPolicy);
+  accessPolicy = applyProjectAdminAccessPolicy(project, membership, accessPolicy);
 
   return accessPolicy;
 }
@@ -184,14 +193,12 @@ function addDefaultResourceTypes(resourcePolicies: AccessPolicyResource[]): void
  * Updates the access policy to include project admin rules.
  * This includes ensuring no admin rights for non-admins and restricted access for admins.
  * @param project - The project.
- * @param login - The user login.
  * @param membership - The active project membership.
  * @param accessPolicy - The existing access policy.
  * @returns Updated access policy with all project admin rules applied.
  */
 function applyProjectAdminAccessPolicy(
   project: Project,
-  login: Login,
   membership: ProjectMembership,
   accessPolicy: AccessPolicy
 ): AccessPolicy {
