@@ -22,6 +22,7 @@ import {
 } from '@medplum/fhirtypes';
 import { useMedplum, useMedplumNavigate, useResource } from '@medplum/react-hooks';
 import {
+  IconBrain,
   IconCheck,
   IconCloudUpload,
   IconEdit,
@@ -30,6 +31,7 @@ import {
   IconMessage,
   IconPin,
   IconPinnedOff,
+  IconTextRecognition,
   IconTrash,
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -230,6 +232,20 @@ export function ResourceTimeline<T extends Resource>(props: ResourceTimelineProp
     navigate(`/${version.resourceType}/${version.id}/_history/${version.meta?.versionId}`);
   }
 
+  function onAwsTextract(resource: Resource): void {
+    medplum
+      .post(medplum.fhirUrl(resource.resourceType, resource.id as string, '$aws-textract'), {})
+      .then((result) => addResource(result))
+      .catch(console.error);
+  }
+
+  function onAwsComprehend(resource: Resource): void {
+    medplum
+      .post(medplum.fhirUrl(resource.resourceType, resource.id as string, '$aws-comprehend'), {})
+      .then((result) => addResource(result))
+      .catch(console.error);
+  }
+
   function onUploadStart(): void {
     showNotification({
       id: 'upload-notification',
@@ -353,7 +369,15 @@ export function ResourceTimeline<T extends Resource>(props: ResourceTimelineProp
             );
           case 'Media':
             return (
-              <MediaTimelineItem key={key} resource={item} onDetails={onDetails} onEdit={onEdit} onDelete={onDelete} />
+              <MediaTimelineItem
+                key={key}
+                resource={item}
+                onDetails={onDetails}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onAwsTextract={onAwsTextract}
+                onAwsComprehend={onAwsComprehend}
+              />
             );
           default:
             return (
@@ -374,6 +398,8 @@ interface BaseTimelineItemProps<T extends Resource> {
   readonly onDetails?: (resource: T) => void;
   readonly onEdit?: (resource: T) => void;
   readonly onDelete?: (resource: T) => void;
+  readonly onAwsTextract?: (resource: T) => void;
+  readonly onAwsComprehend?: (resource: T) => void;
 }
 
 function TimelineItemPopupMenu<T extends Resource>(props: BaseTimelineItemProps<T>): JSX.Element {
@@ -415,6 +441,30 @@ function TimelineItemPopupMenu<T extends Resource>(props: BaseTimelineItemProps<
         >
           Edit
         </Menu.Item>
+      )}
+      {(props.onAwsTextract || props.onAwsComprehend) && (
+        <>
+          <Menu.Divider />
+          <Menu.Label>AI</Menu.Label>
+          {props.onAwsTextract && (
+            <Menu.Item
+              leftSection={<IconTextRecognition size={14} />}
+              onClick={() => (props.onAwsTextract as (resource: T) => void)(props.resource)}
+              aria-label={`AWS Textract ${getReferenceString(props.resource)}`}
+            >
+              AWS Textract
+            </Menu.Item>
+          )}
+          {props.onAwsComprehend && (
+            <Menu.Item
+              leftSection={<IconBrain size={14} />}
+              onClick={() => (props.onAwsComprehend as (resource: T) => void)(props.resource)}
+              aria-label={`AWS Comprehend ${getReferenceString(props.resource)}`}
+            >
+              AWS Comprehend
+            </Menu.Item>
+          )}
+        </>
       )}
       {props.onDelete && (
         <>

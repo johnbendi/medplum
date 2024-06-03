@@ -59333,6 +59333,8 @@
           "description": "A list of optional features that are enabled for the project.",
           "items": {
             "enum": [
+              "aws-comprehend",
+              "aws-textract",
               "bots",
               "cron",
               "email",
